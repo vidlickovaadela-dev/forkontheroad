@@ -38,8 +38,7 @@ collections:
         options:
           - { label: "Portrét", value: portret }
           - { label: "Pečenie", value: pecenie }
-          - { label: "Knihy", value: knihy }
-          - { label: "Rozhovory", value: rozhovory }
+          - { label: "Skoro poézia", value: knihy }
           - { label: "Prečítané", value: precitane }
           - { label: "Život v kufri", value: zivot }
       - { name: obrazok, label: "Titulná fotka", widget: image, required: false }
