@@ -263,12 +263,12 @@ body { position: relative; }
   top: 0;
   bottom: 0;
   width: 300px;
-  opacity: .8;
-  background: url("vetvicka.png?v=2") repeat-y;
+  opacity: .85;
+  background-repeat: repeat-y;
   background-size: 300px auto;
 }
-.vetva-pas.vlavo { left: calc(50% - 26rem - 315px); }
-.vetva-pas.vpravo { right: calc(50% - 26rem - 315px); transform: scaleX(-1); background-position: 0 -330px; }
+.vetva-pas.vlavo { left: calc(50% - 26rem - 330px); background-image: url("vetva_L.png"); }
+.vetva-pas.vpravo { right: calc(50% - 26rem - 330px); background-image: url("vetva_R.png"); background-position: 0 -260px; }
 @media (max-width: 80rem) { .vetvy { display: none; } }
 
 /* Líška v päte */
@@ -293,6 +293,10 @@ body { position: relative; }
 .najnovsi .listok-velky p { font-size: .98rem; }
 .najnovsi .fotka { margin: 0; }
 .citat-dalej { font-family: var(--stroj); font-style: normal; font-size: .95rem; }
+
+.pata p { margin: .2rem 0; }
+.kredit { font-size: .85rem; }
+.kredit a { color: var(--olivova); }
 
 .prazdne {
   text-align: center;
@@ -388,6 +392,7 @@ body { position: relative; }
 <footer class="pata">
   <img class="liska" src="liska.png" alt="" width="683" height="563">
   <p>© <span id="rok"></span> Fork On The Road</p>
+  <p class="kredit">Ilustrácie: Johana · <a href="https://www.instagram.com/johanas.ink/" target="_blank" rel="noopener">@johanas.ink</a></p>
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"></script>
