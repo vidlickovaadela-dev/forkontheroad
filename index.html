@@ -287,7 +287,7 @@ function fotka(src, popis, trieda = "") {
 }
 /* Markdown z administrácie -> HTML; samostatné fotky dostanú rámik a popis */
 function prelozText(md) {
-  const html = window.marked ? marked.parse(String(md || "")) : `<p>${esc(md)}</p>`;
+  const html = window.marked ? marked.parse(String(md || ""), { breaks: true }) : `<p>${esc(md)}</p>`;
   const tmp = document.createElement("div");
   tmp.innerHTML = html;
   tmp.querySelectorAll("p").forEach(p => {
