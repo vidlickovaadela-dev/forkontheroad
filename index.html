@@ -166,6 +166,89 @@ a.stitok:hover { color: var(--olivova); border-color: var(--olivova); }
 .zoznam .miniatura { float: right; width: 7.5rem; margin: 0 0 .5rem 1.25rem; padding: .35rem .35rem .9rem; }
 .zoznam .miniatura img { aspect-ratio: 1; }
 
+
+/* Mriežka kartičiek */
+.mriezka {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 3.25rem 2.5rem;
+}
+.karta { display: flex; flex-direction: column; gap: 1.1rem; }
+.karta-vizual { display: block; text-decoration: none; color: inherit; }
+.karta-vizual .fotka, .karta-vizual .listok {
+  transition: transform .25s ease;
+}
+.mriezka .karta:nth-child(3n+1) .karta-vizual > * { transform: rotate(-1.1deg); }
+.mriezka .karta:nth-child(3n+2) .karta-vizual > * { transform: rotate(.9deg); }
+.mriezka .karta:nth-child(3n) .karta-vizual > * { transform: rotate(-.4deg); }
+.karta-vizual:hover > *, .karta-vizual:focus-visible > * { transform: rotate(0) translateY(-3px) !important; }
+.karta .fotka { margin: 0; padding: .55rem .55rem 1.3rem; }
+.karta .fotka img { aspect-ratio: 4 / 3; }
+/* Papierový lístok pre články bez fotky */
+.listok {
+  position: relative;
+  aspect-ratio: 4 / 3.25;
+  background: #fbfaf6;
+  box-shadow: 0 1px 2px rgba(60,50,40,.16), 0 8px 22px -12px rgba(60,50,40,.35);
+  padding: 2rem 1.75rem 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  overflow: hidden;
+}
+.listok::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2.5rem;
+  background: linear-gradient(rgba(251,250,246,0), #fbfaf6);
+}
+.listok p {
+  margin: 0;
+  font-style: italic;
+  font-size: 1.05rem;
+  line-height: 1.65;
+  color: var(--atrament);
+}
+.karta-text .datum { font-size: .9rem; }
+.karta h3 { font-size: 1.35rem; font-weight: 400; line-height: 1.25; margin: .15rem 0 .4rem; }
+.karta h3 a { text-decoration: none; }
+.karta h3 a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 5px; }
+.karta p.perex-karta {
+  margin: 0;
+  color: var(--atrament-jemny);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Lepiaca páska (washi) na fotkách a lístkoch */
+.fotka { position: relative; }
+.fotka::before, .listok::before {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: -.8rem;
+  left: 50%;
+  width: 5.8rem;
+  height: 1.55rem;
+  transform: translateX(-50%) rotate(-3deg);
+  background-color: var(--paska, rgba(170, 178, 118, .55));
+  background-image: repeating-linear-gradient(90deg, rgba(255,255,255,.16) 0 3px, transparent 3px 9px);
+  clip-path: polygon(0 4%, 4% 0, 96% 0, 100% 10%, 97% 30%, 100% 50%, 97% 70%, 100% 90%, 96% 100%, 4% 100%, 0 88%, 3% 68%, 0 50%, 3% 30%);
+  box-shadow: 0 1px 1px rgba(60,50,40,.08);
+}
+.mriezka .karta:nth-child(4n+2) { --paska: rgba(206, 160, 140, .55); }
+.mriezka .karta:nth-child(4n+3) { --paska: rgba(196, 176, 120, .58); }
+.mriezka .karta:nth-child(4n) { --paska: rgba(145, 168, 178, .52); }
+.mriezka .karta:nth-child(3n+2) .fotka::before, .mriezka .karta:nth-child(3n+2) .listok::before { transform: translateX(-50%) rotate(2.5deg); }
+.obsah figure.fotka:nth-of-type(even) { --paska: rgba(206, 160, 140, .55); }
+.obsah figure.fotka:nth-of-type(even)::before { transform: translateX(-50%) rotate(2deg); }
+.najnovsi .fotka { --paska: rgba(196, 176, 120, .58); }
+
 .prazdne {
   text-align: center;
   font-style: italic;
@@ -228,8 +311,13 @@ a.stitok:hover { color: var(--olivova); border-color: var(--olivova); }
   .najnovsi.s-fotkou { grid-template-columns: 1fr; }
   .najnovsi .fotka { order: -1; }
   .zoznam li { grid-template-columns: 1fr; gap: .25rem; }
+  .mriezka { grid-template-columns: 1fr; gap: 3rem; }
+  .listok { aspect-ratio: auto; padding-bottom: 2.25rem; }
   .zoznam .datum { padding-top: 0; }
   .zoznam .miniatura { width: 5.5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .karta-vizual .fotka, .karta-vizual .listok { transition: none; }
 }
 @media (prefers-reduced-motion: no-preference) {
   main { animation: objav .5s ease-out; }
@@ -303,6 +391,37 @@ function prelozText(md) {
   return tmp.innerHTML;
 }
 
+
+/* Prvé riadky textu pre papierový lístok (verše ostanú po riadkoch) */
+function prveRiadky(md) {
+  const bloky = String(md || "").split(/\n\s*\n/)
+    .map(b => b.trim())
+    .filter(b => b && !/^!\[/.test(b) && !/^#/.test(b));
+  if (!bloky.length) return "";
+  const riadky = bloky[0].split("\n")
+    .map(r => r.replace(/\\$/, "").replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/[*_`\\[\]]/g, "").trim())
+    .filter(Boolean);
+  const versovane = riadky.length > 1 && riadky.every(r => r.length < 70);
+  if (versovane) return riadky.slice(0, 6).map(r => esc(typo(r))).join("<br>");
+  const t = riadky.join(" ");
+  return esc(typo(t.length > 190 ? t.slice(0, 190).replace(/\s+\S*$/, "") + "…" : t));
+}
+
+function karta(c, sKategoriou) {
+  const odkaz = `#clanok-${esc(c.id)}`;
+  const vizual = c.obrazok
+    ? fotka(c.obrazok, "")
+    : `<div class="listok"><p>${prveRiadky(c.body) || esc(typo(c.perex || ""))}</p></div>`;
+  return `<li class="karta">
+    <a class="karta-vizual" href="${odkaz}" tabindex="-1" aria-hidden="true">${vizual}</a>
+    <div class="karta-text">
+      <span class="datum">${formatDatum(c.datum)}${sKategoriou ? ` · ${nazovKategorie(c.kategoria)}` : ""}</span>
+      <h3><a href="${odkaz}">${esc(typo(c.nadpis))}</a></h3>
+      ${c.obrazok && c.perex ? `<p class="perex-karta">${esc(typo(c.perex))}</p>` : ""}
+    </div>
+  </li>`;
+}
+
 function polozkaZoznamu(c) {
   return `<li>
     <span class="datum">${formatDatum(c.datum)}</span>
@@ -328,7 +447,7 @@ function uvod() {
       </div>
       ${prvy.obrazok ? fotka(prvy.obrazok, "") : ""}
     </article>
-    ${ostatne.length ? `<h2 class="zoznam-nadpis">Staršie články</h2><ul class="zoznam">${ostatne.map(polozkaZoznamu).join("")}</ul>` : ""}
+    ${ostatne.length ? `<h2 class="zoznam-nadpis">Staršie články</h2><ul class="mriezka">${ostatne.map(c => karta(c, true)).join("")}</ul>` : ""}
   `;
 }
 
@@ -336,7 +455,7 @@ function kategoria(id) {
   const vyber = clanky.filter(c => c.kategoria === id);
   return `
     <h2 class="zoznam-nadpis">${nazovKategorie(id)}</h2>
-    ${vyber.length ? `<ul class="zoznam">${vyber.map(polozkaZoznamu).join("")}</ul>`
+    ${vyber.length ? `<ul class="mriezka">${vyber.map(c => karta(c, false)).join("")}</ul>`
       : `<p class="prazdne">V tejto kategórii zatiaľ nie je žiadny článok.</p>`}
   `;
 }
