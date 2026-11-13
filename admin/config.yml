@@ -1,0 +1,59 @@
+# Nastavenie administrácie. Ak sa tvoj GitHub účet alebo repozitár
+# volá inak, prepíš riadok "repo" na: meno-uctu/meno-repozitara
+backend:
+  name: github
+  repo: vidlickovaadela-dev/forkontheroad
+  branch: main
+  commit_messages:
+    create: "Nový článok: {{slug}}"
+    update: "Úprava: {{slug}}"
+    delete: "Zmazané: {{slug}}"
+    uploadMedia: "Fotka: {{path}}"
+    deleteMedia: "Zmazaná fotka: {{path}}"
+
+locale: sk
+site_url: https://forkontheroad.sk
+display_url: https://forkontheroad.sk
+logo_url: /logo.png
+media_folder: fotky
+public_folder: /fotky
+
+collections:
+  - name: clanky
+    label: Články
+    label_singular: Článok
+    folder: clanky
+    extension: json
+    format: json
+    create: true
+    slug: "{{slug}}"
+    summary: "{{nadpis}} – {{datum}}"
+    sortable_fields: ["datum", "nadpis"]
+    fields:
+      - { name: nadpis, label: Nadpis, widget: string }
+      - { name: datum, label: Dátum, widget: datetime, format: "YYYY-MM-DD", date_format: "D. M. YYYY", time_format: false }
+      - name: kategoria
+        label: Kategória
+        widget: select
+        options:
+          - { label: "Portrét", value: portret }
+          - { label: "Pečenie", value: pecenie }
+          - { label: "Knihy", value: knihy }
+          - { label: "Rozhovory", value: rozhovory }
+          - { label: "Prečítané", value: precitane }
+          - { label: "Život v kufri", value: zivot }
+      - { name: obrazok, label: "Titulná fotka", widget: image, required: false }
+      - { name: perex, label: "Úvod (krátky text do zoznamu článkov)", widget: text }
+      - { name: body, label: Text, widget: markdown }
+      - { name: koncept, label: "Koncept (zatiaľ nezverejniť)", widget: boolean, default: false, required: false }
+
+  - name: stranky
+    label: Stránky
+    files:
+      - name: o-mne
+        label: O mne
+        file: obsah/o-mne.json
+        format: json
+        fields:
+          - { name: obrazok, label: Fotka, widget: image, required: false }
+          - { name: body, label: Text, widget: markdown }

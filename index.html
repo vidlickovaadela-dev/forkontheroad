@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fork On The Road</title>
+<meta name="description" content="Fork On The Road – články o pečení, knihách, rozhovoroch a živote na cestách.">
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --papier: #f6f5f1;
+  --atrament: #252321;
+  --atrament-jemny: #615c55;
+  --olivova: #66702b;
+  --ciara: #9a958c;
+  --ramik: #fdfdfb;
+  --pismo: "Libre Caslon Text", Georgia, "Times New Roman", serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--papier);
+  color: var(--atrament);
+  font-family: var(--pismo);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+}
+/* Pokrčený papier: svetlo dopadajúce na jemne zvlnený povrch */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1400' height='1400'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.0035 0.005' numOctaves='6' seed='11'/%3E%3CfeDiffuseLighting lighting-color='%23ffffff' surfaceScale='5' diffuseConstant='1.15'%3E%3CfeDistantLight azimuth='235' elevation='48'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: center;
+  mix-blend-mode: multiply;
+  opacity: .42;
+}
+/* jemné zrno papiera */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='z'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.28 0 0 0 0 0.25 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23z)'/%3E%3C/svg%3E");
+}
+
+a { color: inherit; }
+a:focus-visible, button:focus-visible {
+  outline: 2px dashed var(--olivova);
+  outline-offset: 4px;
+}
+img { max-width: 100%; display: block; }
+
+/* Hlavička */
+.hlavicka {
+  text-align: center;
+  padding: 2.5rem 1.25rem 0;
+}
+.logo { display: inline-block; }
+.logo img { width: 150px; height: auto; }
+.menu {
+  margin: 1.5rem auto 0;
+  max-width: 52rem;
+  padding: .9rem 0;
+  border-top: 1.5px dashed var(--ciara);
+  border-bottom: 1.5px dashed var(--ciara);
+}
+.menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .4rem 2rem;
+}
+.menu a {
+  text-decoration: none;
+  font-size: 1.05rem;
+  padding-bottom: 2px;
+  border-bottom: 1.5px solid transparent;
+}
+.menu a:hover { border-bottom-color: var(--atrament-jemny); }
+.menu a[aria-current="page"] {
+  color: var(--olivova);
+  border-bottom-color: var(--olivova);
+}
+
+main {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 3rem 1.25rem 4rem;
+}
+
+/* Úvod: najnovší článok */
+.najnovsi {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 3.5rem;
+}
+.najnovsi.s-fotkou { grid-template-columns: 1.1fr 1fr; }
+.najnovsi h2 {
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  font-weight: 400;
+  margin: .5rem 0 .75rem;
+}
+.najnovsi h2 a { text-decoration: none; }
+.najnovsi h2 a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 6px; }
+.najnovsi p.perex { font-size: 1.15rem; color: var(--atrament-jemny); margin: 0 0 1rem; }
+.citat-dalej { font-style: italic; color: var(--olivova); }
+
+/* Fotky ako vytlačené fotografie */
+.fotka {
+  background: var(--ramik);
+  padding: .6rem .6rem 1.6rem;
+  box-shadow: 0 1px 2px rgba(60,50,40,.18), 0 8px 22px -10px rgba(60,50,40,.35);
+}
+.najnovsi .fotka { transform: rotate(1.2deg); }
+.fotka img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+
+/* Štítok kategórie, ako v pôvodnom blogu */
+.stitok {
+  display: inline-block;
+  font-size: .8rem;
+  letter-spacing: .02em;
+  padding: .1rem .55rem;
+  border: 1px dashed var(--ciara);
+  text-decoration: none;
+  color: var(--atrament-jemny);
+}
+a.stitok:hover { color: var(--olivova); border-color: var(--olivova); }
+.datum { color: var(--atrament-jemny); font-size: .95rem; }
+
+/* Zoznam článkov */
+.zoznam-nadpis {
+  font-size: 1.5rem;
+  font-weight: 400;
+  font-style: italic;
+  margin: 0 0 .5rem;
+}
+.zoznam { list-style: none; margin: 0; padding: 0; }
+.zoznam li {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr;
+  gap: 1.5rem;
+  padding: 1.6rem 0;
+  border-top: 1.5px dashed var(--ciara);
+}
+.zoznam li:last-child { border-bottom: 1.5px dashed var(--ciara); }
+.zoznam .datum { padding-top: .35rem; }
+.zoznam h3 { font-size: 1.45rem; font-weight: 400; line-height: 1.25; margin: 0 0 .35rem; }
+.zoznam h3 a { text-decoration: none; }
+.zoznam h3 a:hover { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 5px; }
+.zoznam p { margin: 0; color: var(--atrament-jemny); }
+.zoznam .miniatura { float: right; width: 7.5rem; margin: 0 0 .5rem 1.25rem; padding: .35rem .35rem .9rem; }
+.zoznam .miniatura img { aspect-ratio: 1; }
+
+.prazdne {
+  text-align: center;
+  font-style: italic;
+  color: var(--atrament-jemny);
+  padding: 3rem 0;
+  border-top: 1.5px dashed var(--ciara);
+  border-bottom: 1.5px dashed var(--ciara);
+}
+
+/* Článok */
+.clanok { max-width: 38rem; margin: 0 auto; }
+.clanok header { text-align: center; margin-bottom: 2.5rem; }
+.clanok h1 {
+  font-size: clamp(2.2rem, 6vw, 3.2rem);
+  font-weight: 400;
+  line-height: 1.1;
+  margin: 1rem 0 .5rem;
+}
+.clanok .titulna { margin: 0 0 2.5rem; }
+.obsah p { margin: 0 0 1.4em; hyphens: auto; }
+.obsah h2 { font-size: 1.5rem; font-weight: 400; font-style: italic; margin: 2.2em 0 .6em; }
+.obsah figure { margin: 2.2rem 0; }
+.obsah figure.fotka:nth-of-type(odd) { transform: rotate(-.6deg); }
+.obsah figure.fotka:nth-of-type(even) { transform: rotate(.7deg); }
+.obsah figure img { aspect-ratio: auto; width: 100%; }
+.obsah a { color: var(--olivova); }
+.obsah blockquote { margin: 1.8em 0; padding-left: 1.2em; border-left: 1.5px dashed var(--ciara); font-style: italic; }
+.obsah figcaption, .fotka figcaption {
+  font-style: italic;
+  font-size: .95rem;
+  color: var(--atrament-jemny);
+  text-align: center;
+  margin-top: .7rem;
+  line-height: 1.4;
+}
+.obsah figure.fotka { padding-bottom: .9rem; }
+.spat {
+  display: block;
+  text-align: center;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1.5px dashed var(--ciara);
+  font-style: italic;
+}
+.koncovka { text-align: center; color: var(--ciara); letter-spacing: .6em; margin: 2rem 0 0; }
+
+.pata {
+  text-align: center;
+  font-size: .9rem;
+  color: var(--atrament-jemny);
+  padding: 0 1.25rem 2.5rem;
+}
+
+@media (max-width: 640px) {
+  body { font-size: 1rem; }
+  .hlavicka { padding-top: 1.75rem; }
+  .logo img { width: 116px; }
+  .menu ul { gap: .3rem 1.25rem; }
+  main { padding-top: 2rem; }
+  .najnovsi.s-fotkou { grid-template-columns: 1fr; }
+  .najnovsi .fotka { order: -1; }
+  .zoznam li { grid-template-columns: 1fr; gap: .25rem; }
+  .zoznam .datum { padding-top: 0; }
+  .zoznam .miniatura { width: 5.5rem; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  main { animation: objav .5s ease-out; }
+  @keyframes objav { from { opacity: 0; } to { opacity: 1; } }
+}
+</style>
+</head>
+<body>
+
+<header class="hlavicka">
+  <a class="logo" href="#" aria-label="Fork On The Road – úvod">
+    <img src="logo.png" alt="Fork On The Road">
+  </a>
+  <nav class="menu" aria-label="Hlavné menu">
+    <ul id="menu"></ul>
+  </nav>
+</header>
+
+<main id="obsah" tabindex="-1"></main>
+
+<footer class="pata">
+  <p>© <span id="rok"></span> Fork On The Road</p>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@15.0.12/marked.min.js"></script>
+<script>
+const KATEGORIE = [
+  { id: "o-mne", nazov: "O mne" },
+  { id: "portret", nazov: "Portrét" },
+  { id: "pecenie", nazov: "Pečenie" },
+  { id: "knihy", nazov: "Knihy" },
+  { id: "rozhovory", nazov: "Rozhovory" },
+  { id: "precitane", nazov: "Prečítané" },
+  { id: "zivot", nazov: "Život v kufri" }
+];
+const MESIACE = ["januára","februára","marca","apríla","mája","júna","júla","augusta","septembra","októbra","novembra","decembra"];
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+const typo = s => String(s ?? "").replace(/(^|[\s(])"/g, "$1„").replace(/"/g, "“");
+
+let clanky = [];
+let oMneData = null;
+
+function formatDatum(d) {
+  const [r, m, den] = String(d || "").slice(0, 10).split("-").map(Number);
+  if (!r || !m || !den) return esc(d);
+  return `${den}. ${MESIACE[m - 1]} ${r}`;
+}
+function nazovKategorie(id) {
+  const k = KATEGORIE.find(k => k.id === id);
+  return k ? k.nazov : "Nezaradené";
+}
+function fotka(src, popis, trieda = "") {
+  if (!src) return "";
+  return `<figure class="fotka ${trieda}"><img src="${esc(src)}" alt="${esc(popis || "")}" loading="lazy">${popis ? `<figcaption>${esc(popis)}</figcaption>` : ""}</figure>`;
+}
+/* Markdown z administrácie -> HTML; samostatné fotky dostanú rámik a popis */
+function prelozText(md) {
+  const html = window.marked ? marked.parse(String(md || "")) : `<p>${esc(md)}</p>`;
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html;
+  tmp.querySelectorAll("p").forEach(p => {
+    const imgs = p.querySelectorAll("img");
+    if (imgs.length === 1 && p.textContent.trim() === "") {
+      const img = imgs[0];
+      p.outerHTML = fotka(img.getAttribute("src"), img.getAttribute("title") || img.getAttribute("alt") || "");
+    }
+  });
+  tmp.querySelectorAll("p").forEach(p => {
+    p.childNodes.forEach(n => { if (n.nodeType === 3) n.textContent = typo(n.textContent); });
+  });
+  return tmp.innerHTML;
+}
+
+function polozkaZoznamu(c) {
+  return `<li>
+    <span class="datum">${formatDatum(c.datum)}</span>
+    <div>
+      ${c.obrazok ? `<a href="#clanok-${esc(c.id)}" tabindex="-1" aria-hidden="true">${fotka(c.obrazok, "", "miniatura")}</a>` : ""}
+      <h3><a href="#clanok-${esc(c.id)}">${esc(typo(c.nadpis))}</a></h3>
+      <p>${esc(typo(c.perex || ""))}</p>
+    </div>
+  </li>`;
+}
+
+function uvod() {
+  if (!clanky.length) return `<p class="prazdne">Zatiaľ tu nie je žiadny článok.</p>`;
+  const [prvy, ...ostatne] = clanky;
+  return `
+    <article class="najnovsi ${prvy.obrazok ? "s-fotkou" : ""}">
+      <div>
+        <a class="stitok" href="#kategoria-${esc(prvy.kategoria)}">${nazovKategorie(prvy.kategoria)}</a>
+        <h2><a href="#clanok-${esc(prvy.id)}">${esc(typo(prvy.nadpis))}</a></h2>
+        <p class="datum">${formatDatum(prvy.datum)}</p>
+        <p class="perex">${esc(typo(prvy.perex || ""))}</p>
+        <a class="citat-dalej" href="#clanok-${esc(prvy.id)}">Čítať ďalej</a>
+      </div>
+      ${prvy.obrazok ? fotka(prvy.obrazok, "") : ""}
+    </article>
+    ${ostatne.length ? `<h2 class="zoznam-nadpis">Staršie články</h2><ul class="zoznam">${ostatne.map(polozkaZoznamu).join("")}</ul>` : ""}
+  `;
+}
+
+function kategoria(id) {
+  const vyber = clanky.filter(c => c.kategoria === id);
+  return `
+    <h2 class="zoznam-nadpis">${nazovKategorie(id)}</h2>
+    ${vyber.length ? `<ul class="zoznam">${vyber.map(polozkaZoznamu).join("")}</ul>`
+      : `<p class="prazdne">V tejto kategórii zatiaľ nie je žiadny článok.</p>`}
+  `;
+}
+
+function clanok(id) {
+  const c = clanky.find(c => c.id === id);
+  if (!c) return `<p class="prazdne">Tento článok sa nenašiel. <a href="#">Prejsť na úvod</a></p>`;
+  document.title = `${c.nadpis} – Fork On The Road`;
+  return `
+    <article class="clanok">
+      <header>
+        <a class="stitok" href="#kategoria-${esc(c.kategoria)}">${nazovKategorie(c.kategoria)}</a>
+        <h1>${esc(typo(c.nadpis))}</h1>
+        <p class="datum">${formatDatum(c.datum)}</p>
+      </header>
+      ${c.obrazok ? fotka(c.obrazok, "", "titulna") : ""}
+      <div class="obsah">${prelozText(c.body)}</div>
+      <p class="koncovka" aria-hidden="true">— — —</p>
+      <a class="spat" href="#">Späť na všetky články</a>
+    </article>
+  `;
+}
+
+function oMne() {
+  const o = oMneData || { body: "" };
+  document.title = "O mne – Fork On The Road";
+  return `
+    <article class="clanok">
+      <header><h1>O mne</h1></header>
+      ${o.obrazok ? fotka(o.obrazok, "", "titulna") : ""}
+      <div class="obsah">${prelozText(o.body)}</div>
+    </article>
+  `;
+}
+
+function vykresli() {
+  const hash = decodeURIComponent(location.hash.replace(/^#/, ""));
+  document.title = "Fork On The Road";
+  let html, aktivne = "";
+  if (hash === "o-mne") { html = oMne(); aktivne = "o-mne"; }
+  else if (hash.startsWith("kategoria-")) { aktivne = hash.slice(10); html = kategoria(aktivne); }
+  else if (hash.startsWith("clanok-")) {
+    const c = clanky.find(c => c.id === hash.slice(7));
+    aktivne = c ? c.kategoria : "";
+    html = clanok(hash.slice(7));
+  }
+  else html = uvod();
+
+  document.getElementById("menu").innerHTML = KATEGORIE.map(k => {
+    const href = k.id === "o-mne" ? "#o-mne" : `#kategoria-${k.id}`;
+    return `<li><a href="${href}"${k.id === aktivne ? ' aria-current="page"' : ""}>${k.nazov}</a></li>`;
+  }).join("");
+  document.getElementById("obsah").innerHTML = html;
+  window.scrollTo(0, 0);
+}
+
+async function nacitaj(url) {
+  try {
+    const r = await fetch(url, { cache: "no-cache" });
+    return r.ok ? await r.json() : null;
+  } catch (e) { return null; }
+}
+
+/* Netlify prihlásenie: ak sa niekto vráti z pozvánky, pošli ho do administrácie */
+if (/(invite|recovery|confirmation)_token=/.test(location.hash)) location.href = "/admin/" + location.hash;
+
+document.getElementById("rok").textContent = new Date().getFullYear();
+window.addEventListener("hashchange", vykresli);
+(async () => {
+  const [c, o] = await Promise.all([nacitaj("clanky.json"), nacitaj("obsah/o-mne.json")]);
+  clanky = Array.isArray(c) ? c : [];
+  oMneData = o;
+  vykresli();
+})();
+</script>
+</body>
+</html>
