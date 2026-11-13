@@ -17,12 +17,15 @@ display_url: https://forkontheroad.sk
 logo_url: /logo.png
 media_folder: fotky
 public_folder: /fotky
-
+slug:
+     encoding: "ascii"
+     clean_accents: true
 collections:
   - name: clanky
     label: Články
     label_singular: Článok
     folder: clanky
+    identifier_field: nadpis
     extension: json
     format: json
     create: true
