@@ -298,6 +298,28 @@ body { position: relative; }
 .kredit { font-size: .85rem; }
 .kredit a { color: var(--olivova); }
 
+/* Najnovší článok: jedna veľká kartička cez celú šírku */
+.mriezka.jeden { grid-template-columns: 1fr; }
+.zoznam-nadpis.starsie { margin-top: 4rem; }
+.mriezka .karta.hlavna .karta-vizual > * { transform: rotate(-.5deg); }
+.karta.hlavna .listok { aspect-ratio: auto; min-height: 14rem; padding: 2.6rem 2.6rem 2.2rem; }
+.karta.hlavna .listok p { font-size: 1rem; }
+.karta.hlavna .fotka img { aspect-ratio: 16 / 9; }
+.karta.hlavna h3 { font-size: 1.9rem; }
+
+/* Článok a O mne na bledšom hárku papiera */
+main:focus { outline: none; }
+.clanok.harok {
+  max-width: none;
+  background: rgba(252, 251, 248, .72);
+  border: 1px solid rgba(60, 50, 40, .09);
+  box-shadow: 0 1px 2px rgba(60, 50, 40, .07), 0 22px 44px -30px rgba(60, 50, 40, .4);
+  padding: 3rem clamp(1.25rem, 6vw, 4.5rem) 3.25rem;
+}
+.clanok.harok > * { max-width: 38rem; margin-left: auto; margin-right: auto; }
+.clanok.harok > .titulna { max-width: 42rem; }
+@media (max-width: 640px) { .clanok.harok { padding: 2rem 1.1rem 2.25rem; } }
+
 .prazdne {
   text-align: center;
   font-style: italic;
@@ -460,12 +482,12 @@ function prveRiadky(md) {
   return esc(typo(t.length > 190 ? t.slice(0, 190).replace(/\s+\S*$/, "") + "…" : t));
 }
 
-function karta(c, sKategoriou) {
+function karta(c, sKategoriou, hlavna = false) {
   const odkaz = `#clanok-${esc(c.id)}`;
   const vizual = c.obrazok
     ? fotka(c.obrazok, "")
     : `<div class="listok"><p>${prveRiadky(c.body) || esc(typo(c.perex || ""))}</p></div>`;
-  return `<li class="karta">
+  return `<li class="karta${hlavna ? " hlavna" : ""}">
     <div class="karta-vizual">${vizual}</div>
     <div class="karta-text">
       <span class="datum">${formatDatum(c.datum)}${sKategoriou ? ` · ${nazovKategorie(c.kategoria)}` : ""}</span>
@@ -490,17 +512,9 @@ function uvod() {
   if (!clanky.length) return `<p class="prazdne">Zatiaľ tu nie je žiadny článok.</p>`;
   const [prvy, ...ostatne] = clanky;
   return `
-    <article class="najnovsi s-fotkou">
-      <div>
-        <a class="stitok" href="#kategoria-${esc(prvy.kategoria)}">${nazovKategorie(prvy.kategoria)}</a>
-        <h2><a href="#clanok-${esc(prvy.id)}">${esc(typo(prvy.nadpis))}</a></h2>
-        <p class="datum">${formatDatum(prvy.datum)}</p>
-        <p class="perex">${esc(typo(prvy.perex || ""))}</p>
-        <a class="citat-dalej" href="#clanok-${esc(prvy.id)}">Čítať ďalej</a>
-      </div>
-      ${prvy.obrazok ? fotka(prvy.obrazok, "") : `<a class="listok listok-velky" href="#clanok-${esc(prvy.id)}" tabindex="-1" aria-hidden="true"><p>${prveRiadky(prvy.body) || esc(typo(prvy.perex || ""))}</p></a>`}
-    </article>
-    ${ostatne.length ? `<h2 class="zoznam-nadpis">Staršie články</h2><ul class="mriezka">${ostatne.map(c => karta(c, true)).join("")}</ul>` : ""}
+    <h2 class="zoznam-nadpis">Najnovšie</h2>
+    <ul class="mriezka jeden">${karta(prvy, true, true)}</ul>
+    ${ostatne.length ? `<h2 class="zoznam-nadpis starsie">Staršie články</h2><ul class="mriezka">${ostatne.map(c => karta(c, true)).join("")}</ul>` : ""}
   `;
 }
 
@@ -526,7 +540,7 @@ function clanok(id) {
   if (!c) return `<p class="prazdne">Tento článok sa nenašiel. <a href="#">Prejsť na úvod</a></p>`;
   document.title = `${c.nadpis} – Fork On The Road`;
   return `
-    <article class="clanok">
+    <article class="clanok harok">
       <header>
         <a class="stitok" href="#kategoria-${esc(c.kategoria)}">${nazovKategorie(c.kategoria)}</a>
         <h1>${esc(typo(c.nadpis))}</h1>
@@ -545,7 +559,7 @@ function oMne() {
   const o = oMneData || { body: "" };
   document.title = "O mne – Fork On The Road";
   return `
-    <article class="clanok">
+    <article class="clanok harok">
       <header><h1>O mne</h1></header>
       ${o.obrazok ? fotka(o.obrazok, "", "titulna") : ""}
       <div class="obsah">${prelozText(o.body)}</div>
