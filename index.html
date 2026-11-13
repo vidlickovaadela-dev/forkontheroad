@@ -394,14 +394,14 @@ function prelozText(md) {
 
 /* Prvé riadky textu pre papierový lístok (verše ostanú po riadkoch) */
 function prveRiadky(md) {
-  const bloky = String(md || "").split(/\n\s*\n/)
+  const riadky = String(md || "").split(/\n\s*\n/)
     .map(b => b.trim())
-    .filter(b => b && !/^!\[/.test(b) && !/^#/.test(b));
-  if (!bloky.length) return "";
-  const riadky = bloky[0].split("\n")
+    .filter(b => b && !/^!\[/.test(b) && !/^#/.test(b))
+    .flatMap(b => b.split("\n"))
     .map(r => r.replace(/\\$/, "").replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1").replace(/[*_`\\[\]]/g, "").trim())
     .filter(Boolean);
-  const versovane = riadky.length > 1 && riadky.every(r => r.length < 70);
+  if (!riadky.length) return "";
+  const versovane = riadky.slice(0, 6).every(r => r.length < 70);
   if (versovane) return riadky.slice(0, 6).map(r => esc(typo(r))).join("<br>");
   const t = riadky.join(" ");
   return esc(typo(t.length > 190 ? t.slice(0, 190).replace(/\s+\S*$/, "") + "…" : t));
@@ -417,7 +417,7 @@ function karta(c, sKategoriou) {
     <div class="karta-text">
       <span class="datum">${formatDatum(c.datum)}${sKategoriou ? ` · ${nazovKategorie(c.kategoria)}` : ""}</span>
       <h3><a href="${odkaz}">${esc(typo(c.nadpis))}</a></h3>
-      ${c.obrazok && c.perex ? `<p class="perex-karta">${esc(typo(c.perex))}</p>` : ""}
+      ${c.perex ? `<p class="perex-karta">${esc(typo(c.perex))}</p>` : ""}
     </div>
   </li>`;
 }
