@@ -328,6 +328,21 @@ main:focus { outline: none; }
 .clanok.harok > .titulna { max-width: 42rem; }
 @media (max-width: 640px) { .clanok.harok { padding: 2rem 1.1rem 2.25rem; } }
 
+/* Na užších obrazovkách, kde sa vetvy po bokoch nezmestia: vodorovná vetvička pod menu a nad pätou */
+.vetva-mobil { display: none; }
+@media (max-width: 80rem) {
+  .vetva-mobil {
+    display: block;
+    height: 90px;
+    max-width: 56rem;
+    margin: .6rem auto 0;
+    background: url("vetva_pas.png") center / auto 100% repeat-x;
+    opacity: .8;
+  }
+  .vetva-mobil.dole { transform: scaleX(-1); margin: 0 auto 1.5rem; }
+}
+@media (max-width: 640px) { .vetva-mobil { height: 76px; margin-left: -1.25rem; margin-right: -1.25rem; } .vetva-mobil.dole { margin: 0 0 1.25rem; } }
+
 .prazdne {
   text-align: center;
   font-style: italic;
@@ -416,11 +431,13 @@ main:focus { outline: none; }
   <nav class="menu" aria-label="Hlavné menu">
     <ul id="menu"></ul>
   </nav>
+  <div class="vetva-mobil" aria-hidden="true"></div>
 </header>
 
 <main id="obsah" tabindex="-1"></main>
 
 <footer class="pata">
+  <div class="vetva-mobil dole" aria-hidden="true"></div>
   <img class="liska" src="liska.png" alt="" width="683" height="563">
   <p>© <span id="rok"></span> Fork On The Road</p>
   <p class="kredit">Ilustrácie: Johana · <a href="https://www.instagram.com/johanas.ink/" target="_blank" rel="noopener">@johanas.ink</a></p>
