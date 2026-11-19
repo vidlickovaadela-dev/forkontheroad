@@ -4,6 +4,7 @@ backend:
   name: github
   repo: vidlickovaadela-dev/forkontheroad
   branch: main
+  site_domain: eclectic-pithivier-f50a93.netlify.app
   commit_messages:
     create: "Nový článok: {{slug}}"
     update: "Úprava: {{slug}}"
