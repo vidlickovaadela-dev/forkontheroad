@@ -508,6 +508,15 @@ function prveRiadky(md) {
   return esc(typo(t.length > 190 ? t.slice(0, 190).replace(/\s+\S*$/, "") + "…" : t));
 }
 
+/* Úvod pod kartičkou len vtedy, ak neopakuje text, ktorý už je na lístku */
+function uvodNaKarte(c) {
+  const norm = t => String(t || "").replace(/[\\*_`\s]+/g, " ").replace(/…$/, "").trim().toLowerCase();
+  const p = norm(c.perex);
+  if (!p) return "";
+  if (!c.obrazok && norm(c.body).startsWith(p)) return "";
+  return `<p class="perex-karta">${esc(typo(c.perex))}</p>`;
+}
+
 function karta(c, sKategoriou, hlavna = false) {
   const odkaz = `#clanok-${esc(c.id)}`;
   const vizual = c.obrazok
@@ -518,7 +527,7 @@ function karta(c, sKategoriou, hlavna = false) {
     <div class="karta-text">
       <span class="datum">${formatDatum(c.datum)}${sKategoriou ? ` · ${nazovKategorie(c.kategoria)}` : ""}</span>
       <h3><a href="${odkaz}">${esc(typo(c.nadpis))}</a></h3>
-      ${c.perex ? `<p class="perex-karta">${esc(typo(c.perex))}</p>` : ""}
+      ${uvodNaKarte(c)}
     </div>
   </li>`;
 }
