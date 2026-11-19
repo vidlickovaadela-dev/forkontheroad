@@ -4,7 +4,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fork On The Road</title>
-<meta name="description" content="Fork On The Road – články o pečení, knihách, rozhovoroch a živote na cestách.">
+<meta name="description" content="Zápisky z rázcestia. Skoro poézia, portréty, pečenie, fotky a výlevy.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Fork On The Road">
+<meta property="og:title" content="Fork On The Road">
+<meta property="og:description" content="Zápisky z rázcestia. Skoro poézia, portréty, pečenie, fotky a výlevy.">
+<meta property="og:url" content="https://forkontheroad.sk/">
+<meta property="og:image" content="https://forkontheroad.sk/zdielanie.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="sk_SK">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -67,7 +77,7 @@ img { max-width: 100%; display: block; }
   padding: 2.5rem 1.25rem 0;
 }
 .logo { display: inline-block; }
-.logo img { width: 150px; height: auto; }
+.logo img { width: 150px; height: auto; opacity: .62; }
 .menu {
   margin: 1.5rem auto 0;
   max-width: 52rem;
@@ -343,6 +353,27 @@ main:focus { outline: none; }
 }
 @media (max-width: 640px) { .vetva-mobil { height: 76px; margin-left: -1.25rem; margin-right: -1.25rem; } .vetva-mobil.dole { margin: 0 0 1.25rem; } }
 
+/* Lístky s novším a ďalším článkom pod článkom */
+.susedia { margin: 3rem 0 0; padding-top: 1.5rem; }
+.susedia .mriezka { grid-template-columns: 2fr 3fr; align-items: end; gap: 3rem; margin: 0; }
+.susedia-popis { font-family: var(--stroj); font-size: .9rem; color: var(--atrament-jemny); }
+.susedia .karta.maly h3 { font-size: 1.15rem; }
+.susedia .karta.maly .listok p { font-size: .78rem; }
+.susedia .karta.maly .listok { padding: 1.5rem 1.1rem 1rem; }
+.susedia .karta.velky h3 { font-size: 1.5rem; }
+@media (max-width: 640px) {
+  .susedia .mriezka { grid-template-columns: 1fr; }
+  .susedia .karta.velky { order: -1; }
+  .susedia .prazdny { display: none; }
+}
+
+/* Podpis pod každým článkom */
+.podpis { margin: 3rem 0 0; text-align: center; color: var(--atrament-jemny); }
+.podpis-ciara { display: flex; align-items: center; gap: 1rem; }
+.podpis-ciara::before, .podpis-ciara::after { content: ""; flex: 1; border-top: 1.5px dashed var(--ciara); }
+.podpis-ciara img { width: 3.2rem; height: auto; opacity: .6; transform: rotate(-6deg); }
+.podpis-meno { display: block; margin-top: .3rem; font-size: 1.05rem; letter-spacing: .06em; }
+
 .prazdne {
   text-align: center;
   font-style: italic;
@@ -382,10 +413,9 @@ main:focus { outline: none; }
 .spat {
   display: block;
   text-align: center;
-  margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 1.5px dashed var(--ciara);
-  font-style: italic;
+  margin-top: 2.5rem;
+  font-family: var(--stroj);
+  font-size: .9rem;
 }
 .koncovka { text-align: center; color: var(--ciara); letter-spacing: .6em; margin: 2rem 0 0; }
 
@@ -584,10 +614,35 @@ function clanok(id) {
       ${c.obrazok ? fotka(c.obrazok, "", "titulna") : ""}
       ${uvodnik(c)}
       <div class="obsah">${prelozText(c.body)}</div>
-      <p class="koncovka" aria-hidden="true">— — —</p>
+      <div class="podpis"><span class="podpis-ciara" aria-hidden="true"><img src="vidlicka.png" alt="" width="276" height="128"></span><span class="podpis-meno">Fork</span></div>
       <a class="spat" href="#">Späť na všetky články</a>
     </article>
+    ${susedia(c)}
   `;
+}
+
+/* Na konci článku: menší lístok s novším textom vľavo, väčší s ďalším (starším) vpravo */
+function susedia(c) {
+  const i = clanky.findIndex(x => x.id === c.id);
+  const novsi = clanky[i - 1], dalsi = clanky[i + 1];
+  if (!novsi && !dalsi) return "";
+  const listok = (x, popis, trieda) => {
+    const vizual = x.obrazok ? fotka(x.obrazok, "")
+      : `<div class="listok"><p>${prveRiadky(x.body) || esc(typo(x.perex || ""))}</p></div>`;
+    return `<li class="karta ${trieda}">
+      <div class="karta-vizual">${vizual}</div>
+      <div class="karta-text">
+        <span class="susedia-popis">${popis}</span>
+        <h3><a href="#clanok-${esc(x.id)}">${esc(typo(x.nadpis))}</a></h3>
+      </div>
+    </li>`;
+  };
+  return `<nav class="susedia" aria-label="Ďalšie články">
+    <ul class="mriezka">
+      ${novsi ? listok(novsi, "Novší", "maly") : `<li class="prazdny" aria-hidden="true"></li>`}
+      ${dalsi ? listok(dalsi, "Starší", "velky") : ""}
+    </ul>
+  </nav>`;
 }
 
 function oMne() {
