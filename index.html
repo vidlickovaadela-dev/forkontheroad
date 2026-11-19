@@ -26,6 +26,7 @@
   --atrament-jemny: #615c55;
   --olivova: #66702b;
   --ciara: #9a958c;
+  --atrament-pecatky: #4d5888;
   --ramik: #fdfdfb;
   --pismo: "Libre Caslon Text", Georgia, "Times New Roman", serif;
   --stroj: "Courier Prime", "Courier New", Courier, monospace;
@@ -153,6 +154,29 @@ main {
 a.stitok:hover { color: var(--olivova); border-color: var(--olivova); }
 .datum { color: var(--atrament-jemny); font-size: .95rem; }
 
+/* Pečiatka s dátumom (ako v knižničnej knihe) */
+.pecatka {
+  display: inline-block;
+  transform: rotate(var(--uhol, -2deg));
+  padding: 3px;
+  border: 1.5px solid var(--atrament-pecatky);
+  border-radius: 4px;
+  color: var(--atrament-pecatky);
+  font-family: var(--stroj);
+  font-size: .82rem;
+  font-weight: 700;
+  letter-spacing: .14em;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: .9;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='60'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.4 1.55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='60'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.4 1.55'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+}
+.pecatka span { display: block; padding: .32rem .5rem .26rem .62rem; border: 1px solid var(--atrament-pecatky); border-radius: 2px; }
+.kat-meno { font-family: var(--stroj); font-size: .85rem; margin-left: .7rem; color: var(--atrament-jemny); }
+.karta-text .datum { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem 0; margin-bottom: .35rem; }
+.clanok header .datum { margin-top: .6rem; }
+
 /* Zoznam článkov */
 .zoznam-nadpis {
   font-family: var(--stroj);
@@ -238,6 +262,17 @@ a.stitok:hover { color: var(--olivova); border-color: var(--olivova); }
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* O mne: fotka ako polaroid prilepený páskou */
+.o-mne { display: flow-root; }
+.polaroid {
+  float: left; width: 15rem; margin: .6rem 2rem 1.2rem 0;
+  background: var(--ramik); padding: .7rem .7rem 2.6rem;
+  box-shadow: 0 1px 2px rgba(60,50,40,.12), 0 6px 16px rgba(60,50,40,.10);
+  transform: rotate(-2.2deg); --paska: rgba(206, 160, 140, .55);
+}
+.polaroid img { display: block; width: 100%; height: auto; aspect-ratio: 5 / 6; object-fit: cover; object-position: 50% 18%; max-height: none; border: 0; box-shadow: none; margin: 0; }
+@media (max-width: 34rem) { .polaroid { float: none; width: min(16rem, 80%); margin: .8rem auto 1.8rem; } }
 
 /* Lepiaca páska (washi) na fotkách a lístkoch */
 .fotka { position: relative; }
@@ -496,6 +531,14 @@ function formatDatum(d) {
   if (!r || !m || !den) return esc(d);
   return `${den}. ${MESIACE[m - 1]} ${r}`;
 }
+/* Dátum ako pečiatka z knižnice */
+const MESIACE_SKR = ["JAN", "FEB", "MAR", "APR", "MÁJ", "JÚN", "JÚL", "AUG", "SEP", "OKT", "NOV", "DEC"];
+function pecatka(d) {
+  const [r, m, den] = String(d || "").slice(0, 10).split("-").map(Number);
+  if (!r || !m || !den) return esc(d);
+  const uhol = [-3, 2, -1.5, 2.5, -2.5, 1.5][(den + m) % 6];
+  return `<time class="pecatka" datetime="${r}-${String(m).padStart(2, "0")}-${String(den).padStart(2, "0")}" title="${formatDatum(d)}" style="--uhol:${uhol}deg"><span>${den} ${MESIACE_SKR[m - 1]} ${r}</span></time>`;
+}
 function nazovKategorie(id) {
   const k = KATEGORIE.find(k => k.id === id);
   return k ? k.nazov : "Nezaradené";
@@ -555,7 +598,7 @@ function karta(c, sKategoriou, hlavna = false) {
   return `<li class="karta${hlavna ? " hlavna" : ""}">
     <div class="karta-vizual">${vizual}</div>
     <div class="karta-text">
-      <span class="datum">${formatDatum(c.datum)}${sKategoriou ? ` · ${nazovKategorie(c.kategoria)}` : ""}</span>
+      <span class="datum">${pecatka(c.datum)}${sKategoriou ? `<span class="kat-meno">${nazovKategorie(c.kategoria)}</span>` : ""}</span>
       <h3><a href="${odkaz}">${esc(typo(c.nadpis))}</a></h3>
       ${uvodNaKarte(c)}
     </div>
@@ -564,7 +607,7 @@ function karta(c, sKategoriou, hlavna = false) {
 
 function polozkaZoznamu(c) {
   return `<li>
-    <span class="datum">${formatDatum(c.datum)}</span>
+    <span class="datum">${pecatka(c.datum)}</span>
     <div>
       ${c.obrazok ? `<a href="#clanok-${esc(c.id)}" tabindex="-1" aria-hidden="true">${fotka(c.obrazok, "", "miniatura")}</a>` : ""}
       <h3><a href="#clanok-${esc(c.id)}">${esc(typo(c.nadpis))}</a></h3>
@@ -609,7 +652,7 @@ function clanok(id) {
       <header>
         <a class="stitok" href="#kategoria-${esc(c.kategoria)}">${nazovKategorie(c.kategoria)}</a>
         <h1>${esc(typo(c.nadpis))}</h1>
-        <p class="datum">${formatDatum(c.datum)}</p>
+        <p class="datum">${pecatka(c.datum)}</p>
       </header>
       ${c.obrazok ? fotka(c.obrazok, "", "titulna") : ""}
       ${uvodnik(c)}
@@ -651,8 +694,10 @@ function oMne() {
   return `
     <article class="clanok harok">
       <header><h1>O mne</h1></header>
-      ${o.obrazok ? fotka(o.obrazok, "", "titulna") : ""}
-      <div class="obsah">${prelozText(o.body)}</div>
+      <div class="o-mne">
+        ${o.obrazok ? `<figure class="fotka polaroid"><img src="${esc(o.obrazok)}" alt="Adela"></figure>` : ""}
+        <div class="obsah">${prelozText(o.body)}</div>
+      </div>
     </article>
   `;
 }
