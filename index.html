@@ -403,6 +403,36 @@ main:focus { outline: none; }
 }
 
 /* Podpis pod každým článkom */
+/* Komentáre */
+.komentare { margin: 3.5rem 0 0; padding-top: 2rem; border-top: 1.5px dashed var(--ciara); }
+.komentare h2 { font-family: var(--stroj); font-weight: 400; font-size: 1.15rem; letter-spacing: .02em; margin: 0 0 1.2rem; }
+.komentar { padding: 1rem 0; border-bottom: 1px dashed var(--ciara); }
+.clanok .komentar header { margin: 0 0 .3rem; padding: 0; text-align: left; border: 0; }
+.komentar header { display: flex; flex-wrap: wrap; gap: .2rem .9rem; align-items: baseline; }
+.komentar-meno { font-family: var(--stroj); font-weight: 700; font-size: .95rem; }
+.komentar-cas { font-family: var(--stroj); font-size: .8rem; color: var(--atrament-jemny); }
+.komentar p { margin: .3rem 0; }
+.komentar-odpoved { margin: .7rem 0 0 1.4rem; padding-left: 1rem; border-left: 2px solid var(--ciara); }
+.komentar-odpoved .komentar-meno { color: var(--olivova); }
+.komentare-prazdne { color: var(--atrament-jemny); font-family: var(--stroj); font-size: .9rem; margin: 0 0 .5rem; }
+.komentar-formular { margin-top: 1.6rem; display: grid; gap: .9rem; }
+.komentar-formular label { display: grid; gap: .3rem; font-family: var(--stroj); font-size: .9rem; }
+.komentar-formular input, .komentar-formular textarea {
+  font: inherit; font-family: var(--pismo); font-size: 1rem; color: var(--atrament);
+  background: rgba(255,255,255,.55); border: 1px solid var(--ciara); border-radius: 2px; padding: .55rem .7rem; width: 100%; box-sizing: border-box;
+}
+.komentar-formular textarea { resize: vertical; min-height: 7rem; line-height: 1.6; }
+.komentar-formular input:focus-visible, .komentar-formular textarea:focus-visible { outline: 2px solid var(--olivova); outline-offset: 1px; }
+.komentar-formular .pasca { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.komentar-akcie { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; }
+.komentar-formular button {
+  font-family: var(--stroj); font-size: .95rem; letter-spacing: .04em; cursor: pointer;
+  background: transparent; color: var(--atrament); border: 1.5px dashed var(--atrament-jemny); padding: .5rem 1.2rem;
+}
+.komentar-formular button:hover { border-color: var(--olivova); color: var(--olivova); }
+.komentar-formular button:disabled { opacity: .5; cursor: default; }
+.komentar-sprava { font-family: var(--stroj); font-size: .85rem; color: var(--atrament-jemny); }
+.komentar-pozn { margin: 0; font-family: var(--stroj); font-size: .8rem; color: var(--atrament-jemny); }
 .podpis { margin: 3rem 0 0; text-align: center; color: var(--atrament-jemny); }
 .podpis-ciara { display: flex; align-items: center; gap: 1rem; }
 .podpis-ciara::before, .podpis-ciara::after { content: ""; flex: 1; border-top: 1.5px dashed var(--ciara); }
@@ -658,6 +688,17 @@ function clanok(id) {
       ${uvodnik(c)}
       <div class="obsah">${prelozText(c.body)}</div>
       <div class="podpis"><span class="podpis-ciara" aria-hidden="true"><img src="vidlicka.png" alt="" width="276" height="128"></span><span class="podpis-meno">Fork</span></div>
+      <section class="komentare" id="komentare" data-clanok="${esc(c.id)}" aria-labelledby="komentare-nadpis">
+        <h2 id="komentare-nadpis">Komentáre</h2>
+        <div class="komentare-zoznam" aria-live="polite"></div>
+        <form class="komentar-formular" novalidate>
+          <label>Meno<input name="meno" maxlength="60" autocomplete="name" required></label>
+          <label>Komentár<textarea name="text" rows="4" maxlength="3000" required></textarea></label>
+          <label class="pasca" aria-hidden="true">Web<input name="web" tabindex="-1" autocomplete="off"></label>
+          <div class="komentar-akcie"><button type="submit">Odoslať</button><span class="komentar-sprava" role="status"></span></div>
+          <p class="komentar-pozn">Komentár sa zobrazí, keď ho schválim.</p>
+        </form>
+      </section>
       <a class="spat" href="#">Späť na všetky články</a>
     </article>
     ${susedia(c)}
@@ -721,6 +762,54 @@ function vykresli() {
   }).join("");
   document.getElementById("obsah").innerHTML = html;
   window.scrollTo(0, 0);
+  pripojKomentare();
+}
+
+/* Komentáre (Cloudflare Pages Functions + D1) */
+function formatCas(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? "" : `${d.getDate()}. ${MESIACE[d.getMonth()]} ${d.getFullYear()}`;
+}
+function textKomentara(t) {
+  return String(t || "").split(/\n{2,}/).map(o => `<p>${esc(o).replace(/\n/g, "<br>")}</p>`).join("");
+}
+async function pripojKomentare() {
+  const sekcia = document.getElementById("komentare");
+  if (!sekcia) return;
+  const id = sekcia.dataset.clanok;
+  const zoznam = sekcia.querySelector(".komentare-zoznam");
+  const form = sekcia.querySelector("form");
+  const sprava = sekcia.querySelector(".komentar-sprava");
+  try {
+    const r = await fetch(`/api/komentare?clanok=${encodeURIComponent(id)}`, { cache: "no-store" });
+    if (!r.ok) throw 0;
+    const k = await r.json();
+    zoznam.innerHTML = k.length ? k.map(x => `
+      <article class="komentar">
+        <header><span class="komentar-meno">${esc(x.meno)}</span><span class="komentar-cas">${formatCas(x.vytvorene)}</span></header>
+        ${textKomentara(x.text)}
+        ${x.odpoved ? `<div class="komentar-odpoved"><span class="komentar-meno">Fork</span>${textKomentara(x.odpoved)}</div>` : ""}
+      </article>`).join("") : `<p class="komentare-prazdne">Zatiaľ tu nie je žiadny komentár.</p>`;
+  } catch (e) {
+    if (document.getElementById("komentare") === sekcia) sekcia.hidden = true;
+    return;
+  }
+  form.addEventListener("submit", async ev => {
+    ev.preventDefault();
+    const d = Object.fromEntries(new FormData(form));
+    if (!d.meno.trim() || d.text.trim().length < 2) { sprava.textContent = "Vyplň meno aj komentár."; return; }
+    const tlacidlo = form.querySelector("button");
+    tlacidlo.disabled = true; sprava.textContent = "Odosielam…";
+    try {
+      const r = await fetch("/api/komentare", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ ...d, clanok: id }) });
+      const v = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(v.chyba || "Nepodarilo sa odoslať.");
+      form.reset();
+      sprava.textContent = "Ďakujem! Komentár sa zobrazí po schválení.";
+    } catch (e) {
+      sprava.textContent = e.message || "Nepodarilo sa odoslať.";
+    } finally { tlacidlo.disabled = false; }
+  });
 }
 
 async function nacitaj(url) {
