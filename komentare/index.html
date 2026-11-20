@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="sk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Komentáre – Fork On The Road</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Libre+Caslon+Text&display=swap" rel="stylesheet">
+<style>
+:root { --papier:#efede8; --ramik:#fdfdfb; --atrament:#252321; --jemny:#6b665e; --ciara:#9a958c; --olivova:#66702b; --cervena:#9c3d2e;
+  --stroj:"Courier Prime","Courier New",monospace; --pismo:"Libre Caslon Text",Georgia,serif; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--papier); color:var(--atrament); font-family:var(--pismo); line-height:1.6; }
+main { max-width: 46rem; margin: 0 auto; padding: 2.5rem 16px 4rem; }
+h1 { font-family:var(--stroj); font-weight:400; font-size:1.5rem; margin:0 0 .3rem; }
+.pod { font-family:var(--stroj); font-size:.9rem; color:var(--jemny); margin:0 0 2rem; }
+.pod a { color:var(--olivova); }
+form.prihlas { display:flex; gap:.6rem; flex-wrap:wrap; }
+input, textarea { font:inherit; font-size:1rem; padding:.5rem .7rem; border:1px solid var(--ciara); border-radius:2px; background:var(--ramik); color:var(--atrament); }
+input { flex:1; min-width:12rem; }
+textarea { width:100%; min-height:5rem; resize:vertical; }
+button { font-family:var(--stroj); font-size:.9rem; cursor:pointer; background:transparent; color:var(--atrament); border:1.5px dashed var(--jemny); padding:.4rem .9rem; }
+button:hover { border-color:var(--olivova); color:var(--olivova); }
+button.zmaz:hover { border-color:var(--cervena); color:var(--cervena); }
+.filtre { display:flex; gap:.5rem; margin: 0 0 1.2rem; flex-wrap:wrap; }
+.filtre button[aria-pressed="true"] { border-style:solid; border-color:var(--atrament); }
+.karta { background:var(--ramik); padding:1.1rem 1.2rem; margin:0 0 1rem; box-shadow:0 1px 2px rgba(60,50,40,.12),0 4px 12px rgba(60,50,40,.08); }
+.karta.caka { border-left:4px solid #c9a227; }
+.hlava { font-family:var(--stroj); font-size:.85rem; color:var(--jemny); display:flex; flex-wrap:wrap; gap:.2rem 1rem; }
+.hlava b { color:var(--atrament); font-size:.95rem; }
+.hlava a { color:var(--olivova); }
+.text { margin:.5rem 0 .8rem; white-space:pre-wrap; }
+.akcie { display:flex; flex-wrap:wrap; gap:.5rem; }
+.odp { margin-top:.8rem; display:none; }
+.odp.otvorena { display:block; }
+.odp div { display:flex; gap:.5rem; margin-top:.4rem; }
+.stitok { font-family:var(--stroj); font-size:.75rem; padding:.05rem .45rem; border:1px solid currentColor; }
+.stitok.caka { color:#8a6d0f; } .stitok.ok { color:var(--olivova); }
+.moja { margin:.6rem 0 0; padding-left:.8rem; border-left:2px solid var(--ciara); font-size:.95rem; }
+.sprava { font-family:var(--stroj); font-size:.9rem; color:var(--jemny); min-height:1.4em; }
+.chyba { color:var(--cervena); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Komentáre</h1>
+  <p class="pod">Schvaľovanie komentárov na blogu · <a href="/">späť na blog</a></p>
+
+  <form class="prihlas" id="prihlas">
+    <input type="password" id="heslo" placeholder="Heslo na schvaľovanie" autocomplete="current-password" required>
+    <button type="submit">Otvoriť</button>
+  </form>
+  <p class="sprava" id="sprava"></p>
+
+  <section id="obsah" hidden>
+    <div class="filtre" role="group" aria-label="Filter">
+      <button data-f="caka" aria-pressed="true">Čakajú</button>
+      <button data-f="ok" aria-pressed="false">Schválené</button>
+      <button data-f="vsetky" aria-pressed="false">Všetky</button>
+    </div>
+    <div id="zoznam"></div>
+  </section>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+let heslo = "", data = [], filter = "caka";
+try { heslo = sessionStorage.getItem("fotr-heslo") || ""; } catch (e) {}
+
+async function api(metoda, telo) {
+  const r = await fetch("/api/moderacia", {
+    method: metoda, cache: "no-store",
+    headers: { "x-heslo": heslo, "content-type": "application/json" },
+    body: telo ? JSON.stringify(telo) : undefined
+  });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.chyba || "Chyba " + r.status);
+  return d;
+}
+function cas(iso) { const d = new Date(iso); return d.toLocaleString("sk-SK", { day:"numeric", month:"numeric", year:"numeric", hour:"2-digit", minute:"2-digit" }); }
+
+function vykresli() {
+  const v = data.filter(k => filter === "vsetky" || (filter === "caka" ? !k.schvalene : k.schvalene));
+  const caka = data.filter(k => !k.schvalene).length;
+  $('[data-f="caka"]').textContent = `Čakajú (${caka})`;
+  $("#zoznam").innerHTML = v.length ? v.map(k => `
+    <article class="karta ${k.schvalene ? "" : "caka"}" data-id="${k.id}">
+      <div class="hlava"><b>${esc(k.meno)}</b><span>${cas(k.vytvorene)}</span>
+        <a href="/#clanok-${esc(k.clanok)}" target="_blank" rel="noopener">${esc(k.clanok)}</a>
+        <span class="stitok ${k.schvalene ? "ok" : "caka"}">${k.schvalene ? "schválený" : "čaká"}</span></div>
+      <div class="text">${esc(k.text)}</div>
+      ${k.odpoved ? `<div class="moja"><b>Tvoja odpoveď:</b> ${esc(k.odpoved)}</div>` : ""}
+      <div class="akcie">
+        ${k.schvalene ? `<button data-a="skry">Skryť</button>` : `<button data-a="schval">Schváliť</button>`}
+        <button data-a="odpoved">${k.odpoved ? "Upraviť odpoveď" : "Odpovedať"}</button>
+        <button class="zmaz" data-a="zmaz">Zmazať</button>
+      </div>
+      <div class="odp"><textarea placeholder="Tvoja odpoveď (zobrazí sa pod komentárom ako Fork)">${esc(k.odpoved || "")}</textarea>
+        <div><button data-a="ulozodp">Uložiť odpoveď</button></div></div>
+    </article>`).join("") : `<p class="sprava">${filter === "caka" ? "Nič nečaká na schválenie." : "Žiadne komentáre."}</p>`;
+}
+
+async function nacitaj() {
+  $("#sprava").textContent = "Načítavam…"; $("#sprava").classList.remove("chyba");
+  try {
+    data = await api("GET");
+    try { sessionStorage.setItem("fotr-heslo", heslo); } catch (e) {}
+    $("#prihlas").hidden = true; $("#obsah").hidden = false; $("#sprava").textContent = "";
+    vykresli();
+  } catch (e) {
+    $("#sprava").textContent = e.message; $("#sprava").classList.add("chyba");
+    $("#prihlas").hidden = false; $("#obsah").hidden = true;
+  }
+}
+
+$("#prihlas").addEventListener("submit", e => { e.preventDefault(); heslo = $("#heslo").value; nacitaj(); });
+$(".filtre").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  filter = b.dataset.f;
+  document.querySelectorAll(".filtre button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  vykresli();
+});
+$("#zoznam").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const karta = b.closest(".karta"); const id = Number(karta.dataset.id); const a = b.dataset.a;
+  if (a === "odpoved") { karta.querySelector(".odp").classList.toggle("otvorena"); return; }
+  if (a === "zmaz" && !karta.dataset.potvrd) { karta.dataset.potvrd = 1; b.textContent = "Naozaj zmazať?"; return; }
+  b.disabled = true;
+  try {
+    if (a === "ulozodp") await api("POST", { id, akcia: "odpovedz", odpoved: karta.querySelector("textarea").value });
+    else await api("POST", { id, akcia: a });
+    data = await api("GET"); vykresli();
+  } catch (err) { $("#sprava").textContent = err.message; $("#sprava").classList.add("chyba"); b.disabled = false; }
+});
+if (heslo) nacitaj();
+</script>
+</body>
+</html>
