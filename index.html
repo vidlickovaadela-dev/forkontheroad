@@ -433,11 +433,8 @@ main:focus { outline: none; }
 .komentar-formular button:disabled { opacity: .5; cursor: default; }
 .komentar-sprava { font-family: var(--stroj); font-size: .85rem; color: var(--atrament-jemny); }
 .komentar-pozn { margin: 0; font-family: var(--stroj); font-size: .8rem; color: var(--atrament-jemny); }
-.podpis { margin: 3rem 0 0; text-align: center; color: var(--atrament-jemny); }
-.podpis-ciara { display: flex; align-items: center; gap: 1rem; }
-.podpis-ciara::before, .podpis-ciara::after { content: ""; flex: 1; border-top: 1.5px dashed var(--ciara); }
-.podpis-ciara img { width: 3.2rem; height: auto; opacity: .6; transform: rotate(-6deg); }
-.podpis-meno { display: block; margin-top: .3rem; font-size: 1.05rem; letter-spacing: .06em; }
+.podpis { margin: 2.2rem 0 0; display: flex; justify-content: flex-end; }
+.podpis svg { width: 6.5rem; height: auto; margin-right: .75rem; transform: rotate(-8deg); opacity: .9; }
 
 .prazdne {
   text-align: center;
@@ -687,7 +684,7 @@ function clanok(id) {
       ${c.obrazok ? fotka(c.obrazok, "", "titulna") : ""}
       ${uvodnik(c)}
       <div class="obsah">${prelozText(c.body)}</div>
-      <div class="podpis"><span class="podpis-ciara" aria-hidden="true"><img src="vidlicka.png" alt="" width="276" height="128"></span><span class="podpis-meno">Fork</span></div>
+      <div class="podpis">${peciatkaSVG()}</div>
       <section class="komentare" id="komentare" data-clanok="${esc(c.id)}" aria-labelledby="komentare-nadpis">
         <h2 id="komentare-nadpis">Komentáre</h2>
         <div class="komentare-zoznam" aria-live="polite"></div>
@@ -703,6 +700,42 @@ function clanok(id) {
     </article>
     ${susedia(c)}
   `;
+}
+
+/* Pečiatka-podpis: líška v aleji (generovaná ako inline SVG, aby používala písmo stránky) */
+function peciatkaSVG() {
+  const I = "#4d5888", P = "#fdfdfb";
+  let s = 7; const rnd = (a, b) => { s = (s * 16807) % 2147483647; return a + (b - a) * (s / 2147483647); };
+  const f = n => n.toFixed(1);
+  const strom = (x, base, h, w, sw) => {
+    const cy = base - h * .62, rx = w / 2, ry = h * .38, n = 9, pts = [];
+    for (let i = 0; i < n; i++) { const a = -Math.PI / 2 + i * 2 * Math.PI / n, r = 1 + rnd(-.08, .08); pts.push([x + Math.cos(a) * rx * r, cy + Math.sin(a) * ry * r]); }
+    let d = `M${f(pts[0][0])} ${f(pts[0][1])}`;
+    for (let i = 0; i < n; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[(i + 1) % n], mx = (x0 + x1) / 2, my = (y0 + y1) / 2, k = .32 + rnd(-.05, .08); d += ` Q${f(mx + (mx - x) * k)} ${f(my + (my - cy) * k)} ${f(x1)} ${f(y1)}`; }
+    const tt = base - h * .34, br = [];
+    const vetva = (x0, y0, a, l, hl) => { const x1 = x0 + Math.cos(a) * l, y1 = y0 + Math.sin(a) * l; br.push(`M${f(x0)} ${f(y0)}L${f(x1)} ${f(y1)}`); if (hl > 0) for (const da of [-.45, .45]) vetva(x1, y1, a + da + rnd(-.12, .12), l * .62, hl - 1); };
+    vetva(x, tt, -Math.PI / 2 + rnd(-.1, .1), ry * .55, h > 18 ? 2 : 1);
+    let o = `<path d="${d}Z" fill="${P}" stroke="${I}" stroke-width="${f(sw)}" stroke-linejoin="round"/><path d="M${f(x)} ${f(base)}V${f(tt)}" stroke="${I}" stroke-width="${f(sw * 1.25)}" stroke-linecap="round"/><path d="${br.join("")}" stroke="${I}" stroke-width="${f(sw * .6)}" fill="none" stroke-linecap="round"/>`;
+    return o;
+  };
+  const vy = 72, Lx = t => 100 - (3 + t * 42), Rx = t => 100 + (3 + t * 42), Y = t => vy + t * 86;
+  let stromy = "";
+  for (const t of [.08, .17, .28, .41, .56, .74, .95]) for (const sd of [-1, 1]) {
+    const x = (sd < 0 ? Lx(t) : Rx(t)) + sd * (3 + t * 10);
+    stromy += strom(x, Y(t), 7 + t * 38, 4 + t * 15, .6 + t * 1.1);
+  }
+  const liska = `<g fill="${I}"><path d="M38 30L31 3L46 18C48.5 17.4 51.5 17.4 54 18L69 3L62 30C64 32 66 35 65 38C61 39 59 41 57 44C55 46 52.5 47 50 47C47.5 47 45 46 43 44C41 41 39 39 35 38C34 35 36 32 38 30Z"/><path d="M37 23L34 9.5L43 18.5ZM63 23L66 9.5L57 18.5Z" fill="${P}" opacity=".6"/><path d="M44 44C38 52 34 62 33 74C32 86 36 96 42 100L58 100C64 96 68 86 67 74C66 62 62 52 56 44Z"/><path d="M37 90L36 121L41 121L42 96ZM63 90L64.5 113L60 113L58 96ZM45 98L45 121L48.5 121L48.5 98Z"/><path d="M34.5 121.5C34.5 123.5 42.5 123.5 42 121ZM44 121.5C44 123.5 49.5 123.5 49 121ZM59 113.5C59 115.5 66 115.5 65.5 113Z"/><path d="M50 84C58 86 66 94 72 104C78 114 86 122 96 122C100 122 103 120 104 117C96 118 90 112 86 104C80 92 70 82 58 78C54 77 50 79 50 84Z"/><path d="M50 84C46 92 52 100 60 106C68 112 74 116 80 120C76 112 72 104 66 96C62 90 56 85 50 84Z"/><path d="M104 117C103 120 100 122 96 122C91 122 87 120 84 117C90 117 98 117 104 117Z" fill="${P}"/></g>`;
+  return `<svg viewBox="0 0 200 200" role="img" aria-label="Fork On The Road – zápisky z rázcestia">
+<defs><clipPath id="pec-kruh"><circle cx="100" cy="100" r="67"/></clipPath>
+<path id="pec-hore" d="M26.5 100a73.5 73.5 0 1 1 147 0"/><path id="pec-dole" d="M18.5 100a81.5 81.5 0 0 0 163 0"/>
+<filter id="pec-opot"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/><feColorMatrix in="n" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -1.3 1.5" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in"/></filter></defs>
+<g filter="url(#pec-opot)"><circle cx="100" cy="100" r="88" fill="none" stroke="${I}" stroke-width="3"/><circle cx="100" cy="100" r="69" fill="none" stroke="${I}" stroke-width="1.6"/>
+<text font-family="Courier Prime, Courier New, monospace" font-weight="700" font-size="13.5" letter-spacing="3.6" fill="${I}"><textPath href="#pec-hore" startOffset="50%" text-anchor="middle">FORK ON THE ROAD</textPath></text>
+<text font-family="Courier Prime, Courier New, monospace" font-weight="700" font-size="9.5" letter-spacing="2.2" fill="${I}"><textPath href="#pec-dole" startOffset="50%" text-anchor="middle">· zápisky z rázcestia ·</textPath></text>
+<g clip-path="url(#pec-kruh)"><path d="M40 75Q62 63 86 72Q100 69 114 72Q138 63 160 75" stroke="${I}" fill="none" stroke-linecap="round"/>
+<path d="M${f(Lx(0))} ${vy}L${f(Lx(1))} ${Y(1)}M${f(Rx(0))} ${vy}L${f(Rx(1))} ${Y(1)}" stroke="${I}" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+<path d="M100 ${f(Y(.05))}V${Y(1)}" stroke="${I}" stroke-width="1.2" stroke-dasharray="2.5 4" fill="none"/>${stromy}
+<g transform="translate(84 112.6) scale(.32)">${liska}</g></g></g></svg>`;
 }
 
 /* Na konci článku: menší lístok s novším textom vľavo, väčší s ďalším (starším) vpravo */
