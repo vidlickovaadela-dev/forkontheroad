@@ -435,6 +435,10 @@ main:focus { outline: none; }
 .komentar-pozn { margin: 0; font-family: var(--stroj); font-size: .8rem; color: var(--atrament-jemny); }
 .podpis { margin: 2.2rem 0 0; display: flex; justify-content: flex-end; }
 .podpis svg { width: 6.5rem; height: auto; margin-right: .75rem; transform: rotate(-8deg); opacity: .9; }
+.podpis-odkaz, .podpis-odkaz:hover { display: block; border: 0; background: none; text-decoration: none; box-shadow: none; }
+.podpis-odkaz svg { transition: transform .35s ease; }
+.podpis-odkaz:hover svg, .podpis-odkaz:focus-visible svg { transform: rotate(-3deg) scale(1.06); }
+.podpis-odkaz:focus-visible { outline: 2px dashed var(--ciara); outline-offset: 6px; border-radius: 50%; }
 
 .prazdne {
   text-align: center;
@@ -684,7 +688,7 @@ function clanok(id) {
       ${c.obrazok ? fotka(c.obrazok, "", "titulna") : ""}
       ${uvodnik(c)}
       <div class="obsah">${prelozText(c.body)}</div>
-      <div class="podpis">${peciatkaSVG()}</div>
+      <div class="podpis"><a class="podpis-odkaz" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" target="_blank" rel="noopener" title="Kam vedie táto cesta?">${peciatkaSVG()}</a></div>
       <section class="komentare" id="komentare" data-clanok="${esc(c.id)}" aria-labelledby="komentare-nadpis">
         <h2 id="komentare-nadpis">Komentáre</h2>
         <div class="komentare-zoznam" aria-live="polite"></div>
